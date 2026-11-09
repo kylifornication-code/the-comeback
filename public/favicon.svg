@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" fill="#0B1F3A"/>
+  <rect y="8" width="64" height="10" fill="#C8102E"/>
+  <rect y="22" width="64" height="6" fill="#F5D76E"/>
+  <text x="32" y="48" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="18" fill="#F7F4EF">AJ</text>
+</svg>
