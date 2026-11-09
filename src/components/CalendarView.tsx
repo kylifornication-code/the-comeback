@@ -14,6 +14,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useComebackStore } from '../app/store';
 import { getTemplateForDate, getWeekForDate } from '../lib/schedule';
+import { getDayCompletion, type DayCompletion } from '../lib/stats';
 
 export function CalendarView() {
   const plan = useComebackStore((s) => s.plan);
@@ -27,10 +28,17 @@ export function CalendarView() {
     return eachDayOfInterval({ start, end });
   }, [cursor]);
 
-  const loggedDates = useMemo(
-    () => new Set(logs.filter((l) => l.entries.some((e) => e.done)).map((l) => l.date)),
-    [logs],
-  );
+  const completionByDate = useMemo(() => {
+    const map = new Map<string, DayCompletion>();
+    const logsByDate = new Map(logs.map((log) => [log.date, log]));
+
+    for (const entry of plan.schedule) {
+      const template = plan.templates.find((t) => t.id === entry.templateId);
+      map.set(entry.date, getDayCompletion(template, logsByDate.get(entry.date)));
+    }
+
+    return map;
+  }, [logs, plan]);
 
   return (
     <div className="animate-fade-up space-y-4">
@@ -70,7 +78,7 @@ export function CalendarView() {
             const week = getWeekForDate(plan, dateKey);
             const inMonth = isSameMonth(day, cursor);
             const today = isSameDay(day, new Date());
-            const done = loggedDates.has(dateKey);
+            const completion = completionByDate.get(dateKey) ?? 'none';
 
             return (
               <button
@@ -86,9 +94,14 @@ export function CalendarView() {
               >
                 <div className="flex items-start justify-between gap-1">
                   <span className="text-sm font-bold">{format(day, 'd')}</span>
-                  {done && (
+                  {completion === 'done' && (
                     <span className="rounded-sm bg-[var(--success)] px-1 text-[10px] font-bold uppercase text-white">
                       Done
+                    </span>
+                  )}
+                  {completion === 'partial' && (
+                    <span className="rounded-sm bg-[var(--aj-stripe)] px-1 text-[10px] font-bold uppercase text-[var(--aj-navy)]">
+                      Partial
                     </span>
                   )}
                 </div>
